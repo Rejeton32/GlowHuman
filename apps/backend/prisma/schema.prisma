@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatar    Avatar?
+  profile   UserProfile?
+  tracking  TrackingData[]
+  quizzes   QuizResult[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model UserProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio             String?
+  avatarUrl       String?
+  gender          String?
+  age             Int?
+  weight          Float?
+  height          Float?
+  skinTone        String?
+  bodyType        String?
+  goals           String[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Avatar {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  model3DUrl      String?
+  skinColor       String
+  bodyColor       String
+  headScore       Int      @default(0)   // Brain/Learning
+  faceScore       Int      @default(0)   // Skincare/Glow
+  armsScore       Int      @default(0)   // Strength
+  torsoScore      Int      @default(0)   // Nutrition/Abs
+  legsScore       Int      @default(0)   // Endurance
+  heartScore      Int      @default(0)   // Sleep/Energy
+  handsScore      Int      @default(0)   // Productivity
+  glowScore       Int      @default(0)   // Overall score
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model TrackingData {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Physical tracking
+  weight          Float?
+  waistCircumference Float?
+  exercise        ExerciseLog?
+  
+  // Nutrition tracking
+  meals           String[]
+  sugarIntake     Int?     // 0-100 scale
+  caloriesConsumed Float?
+  macros          Json?    // {protein, carbs, fats}
+  
+  // Mental health
+  sleepHours      Float?
+  sleepQuality    Int?     // 1-10
+  meditation      Int?     // minutes
+  stressLevel     Int?     // 1-10
+  
+  // Productivity
+  workHours       Float?
+  studyHours      Float?
+  tasksCompleted  Int?
+  incomeMade      Float?
+  
+  // Skincare & extras
+  skincareRoutine String?
+  hydration       Int?     // glasses of water
+  readingHours    Float?
+  
+  date            DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+
+  @@index([userId, date])
+}
+
+model ExerciseLog {
+  id              String   @id @default(cuid())
+  trackingId      String   @unique
+  tracking        TrackingData @relation(fields: [trackingId], references: [id], onDelete: Cascade)
+  
+  type            String   // cardio, strength, yoga, etc
+  duration        Int      // minutes
+  intensity       Int      // 1-10
+  musclesTargeted String[] // chest, back, legs, etc
+  caloriesBurned  Int?
+}
+
+model QuizResult {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  subject         String
+  questions       Json     // Quiz questions and answers
+  score           Int      // percentage 0-100
+  retentionRate   Int      // long-term retention %
+  difficulty      String   // easy, medium, hard
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+}
+
+model Skill {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  category        String   // business, technical, health, etc
+  description     String?
+  icon            String?
+  createdAt       DateTime @default(now())
+}
+
+model UserSkill {
+  id              String   @id @default(cuid())
+  userId          String
+  skillId         String
+  level           Int      // 1-5 mastery level
+  hoursSpent      Int
+  createdAt       DateTime @default(now())
+
+  @@unique([userId, skillId])
+}
