@@ -1,0 +1,1 @@
+{ "name": "glowhuman", "version": "1.0.0", "private": true, "scripts": { "start": "node apps/backend/src/index.js" }, "dependencies": { "express": "^4.17.1", "prisma": "^2.30.0", "@prisma/client": "^2.30.0" }, "devDependencies": { "typescript": "^4.5.4" }}
